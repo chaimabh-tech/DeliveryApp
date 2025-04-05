@@ -1,10 +1,8 @@
 package com.company.deliveries.controller;
 
-import com.company.deliveries.kafka.DeliveryEventProducer;
 import com.company.deliveries.model.DeliveryMode;
 import com.company.deliveries.model.TimeSlot;
-import com.company.deliveries.repository.TimeSlotRepository;
-
+import com.company.deliveries.service.DeliveryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
@@ -12,20 +10,15 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * REST controller for managing delivery modes and time slot reservations.
- */
 @RestController
 @RequestMapping("/api/delivery")
 public class DeliveryController {
 
-    private final TimeSlotRepository timeSlotRepository;
+    private final DeliveryService deliveryService;
 
     @Autowired
-    private DeliveryEventProducer deliveryEventProducer;
-
-    public DeliveryController(TimeSlotRepository timeSlotRepository) {
-        this.timeSlotRepository = timeSlotRepository;
+    public DeliveryController(DeliveryService deliveryService) {
+        this.deliveryService = deliveryService;
     }
 
     /**
@@ -35,7 +28,7 @@ public class DeliveryController {
      */
     @GetMapping("/modes")
     public DeliveryMode[] getAvailableDeliveryModes() {
-        return DeliveryMode.values();
+        return deliveryService.getAvailableDeliveryModes();
     }
 
     /**
@@ -53,8 +46,7 @@ public class DeliveryController {
     public List<TimeSlot> getTimeSlots(
             @RequestParam DeliveryMode mode,
             @RequestParam LocalDate date) {
-
-        return timeSlotRepository.findByDeliveryModeAndDate(mode, date);
+        return deliveryService.getTimeSlots(mode, date);
     }
 
     /**
@@ -69,17 +61,6 @@ public class DeliveryController {
      */
     @PostMapping("/slots/{id}/reserve")
     public String reserveSlot(@PathVariable Long id) {
-        var slot = timeSlotRepository.findById(id).orElseThrow();
-
-        if (slot.isReserved()) {
-            return "Already reserved!";
-        }
-
-        slot.setReserved(true);
-        timeSlotRepository.save(slot);
-
-        deliveryEventProducer.sendDeliveryEvent("Time slot reserved: " + slot.getId());
-
-        return "Slot reserved!";
+        return deliveryService.reserveSlot(id);
     }
 }
