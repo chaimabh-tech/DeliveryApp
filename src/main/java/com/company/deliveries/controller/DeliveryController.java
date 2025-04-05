@@ -6,6 +6,7 @@ import com.company.deliveries.model.TimeSlot;
 import com.company.deliveries.repository.TimeSlotRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +29,7 @@ public class DeliveryController {
         return DeliveryMode.values();
     }
 
+    @Cacheable(value = "timeSlots", key = "#mode.toString() + '-' + #date.toString()")
     @GetMapping("/slots")
     public List<TimeSlot> getTimeSlots(
             @RequestParam DeliveryMode mode,
