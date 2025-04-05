@@ -17,6 +17,8 @@ Assurez-vous d'avoir **Kafka** et **Zookeeper** en cours d'exécution sur `local
 
 ### 4. Lancer l'application
 
+L'application s'exécute sur le port 8080 par défaut.
+
 ## Accéder à la base de données H2
 
 Cette application utilise une **base de données H2 en mémoire**. Vous pouvez accéder à la console de la base de données à l'adresse suivante :
